@@ -10,10 +10,12 @@ const {
   DOMAIN,
 } = require("./config");
 
-const USER_VARIABLE = 300;
+var USER_VARIABLE = 52;
+var userData = {tokenAmount:0, walletAddress:""};
 
 const { Charge } = resources;
 Client.init(COINBASE_API_KEY);
+
 
 const app = express();
 
@@ -30,29 +32,31 @@ app.use(
   })
 );
 
-//app.use(express.json());
-app.post('/api', (req,res) => {
-  console.log(req.body);
 
-});
+console.log('the' + userData.tokenAmount);
 /*
-app.post("/create-charge", async (req, res) => {
+app.post("/api", async (req, res) => {
+    userData = req.body;
+  console.log(data);
+  res.status(200);
   console.log(JSON.parse(req.body.tokenAmount));
 });
 */
-  
-app.post("/create-charge", async (req, res) => {
+app.get("/create-charge", async (req, res) => {
+
+  let amountTimesPrice = req.query.tokenAmount * 0.99
+
   const chargeData = {
     name: "Naiadcoin",
     description: "Buy Naiadcoin",
     local_price: {
-      amount: JSON.parse(req.body.tokenAmount),//req.body.tokenAmount
+      amount: amountTimesPrice,
       currency: "USD",
     },
     pricing_type: "fixed_price",
     
-    redirect_url: `${DOMAIN}/success-payment`,
-    cancel_url: `${DOMAIN}/cancel-payment`,
+    redirect_url: `http://localhost:3000/success-payment`,//`${DOMAIN}/success-payment`
+    cancel_url: `http://localhost:3000/cancel-payment`,//`${DOMAIN}/cancel-payment`
   };
 
   const charge = await Charge.create(chargeData);
