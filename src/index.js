@@ -10,39 +10,53 @@ const {
   DOMAIN,
 } = require("./config");
 
-var USER_VARIABLE = 52;
-var userData = {tokenAmount:0, walletAddress:""};
-
+const mongoose = require("mongoose");
+const Log = require("./model");
+const req = require("express/lib/request");
 const { Charge } = resources;
 Client.init(COINBASE_API_KEY);
 
-
 const app = express();
 
-app.use(cors());
+var corsOptions = {
+  origin: "http://localhost:3001",
+  origin: "http://localhost:3000"
+};
+
+app.use(cors(corsOptions));
 app.use(morgan("dev"));
 
-// add verify in order to process rawBody
+//TO DO
+//
+//server logs to file 
 
-app.use(
-  express.json({
-    verify: (req, res, buf) => {
-      req.rawBody = buf;
-    },
+
+// parse requests of content-type - application/json
+app.use(express.json());
+// parse requests of content-type - application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true })); 
+
+mongoose
+  .connect(`mongodb://localhost:27017/coinbase`, {useNewUrlParser: true,useUnifiedTopology: true})
+  .then(() => {
+    console.log("Successfully connected to MongoDB.");
   })
-);
+  .catch(err => {
+    console.error("Connection error", err);
+    process.exit();
+  });
 
+var timestamp = Date.now();
 
-console.log('the' + userData.tokenAmount);
-/*
-app.post("/api", async (req, res) => {
-    userData = req.body;
-  console.log(data);
-  res.status(200);
-  console.log(JSON.parse(req.body.tokenAmount));
-});
-*/
+async function loggingToDb(x,y){
+  const _log = await Log.create({date: timestamp, tokenAmount: x, walletAddress: y, resolved: 'no'})
+  console.log(_log)
+}
+
 app.get("/create-charge", async (req, res) => {
+
+  //log do bazy danych
+  loggingToDb(req.query.tokenAmount, req.query.walletAddress);
 
   let amountTimesPrice = req.query.tokenAmount * 0.99
 
@@ -55,8 +69,8 @@ app.get("/create-charge", async (req, res) => {
     },
     pricing_type: "fixed_price",
     
-    redirect_url: `http://localhost:3000/success-payment`,//`${DOMAIN}/success-payment`
-    cancel_url: `http://localhost:3000/cancel-payment`,//`${DOMAIN}/cancel-payment`
+    redirect_url: `http://localhost:3000/success-payment`,
+    cancel_url: `http://localhost:3000/cancel-payment`,
   };
 
   const charge = await Charge.create(chargeData);
@@ -75,7 +89,6 @@ app.post("/payment-handler", (req, res) => {
 
   try {
     event = Webhook.verifyEventBody(rawBody, signature, webhookSecret);
-    // console.log(event);
 
     if (event.type === "charge:pending") {
       // received order
