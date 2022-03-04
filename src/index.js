@@ -7,6 +7,7 @@ const { Client, resources, Webhook } = require("coinbase-commerce-node");
 const {
   COINBASE_API_KEY,
   COINBASE_WEBHOOK_SECRET,
+  DB,
   DOMAIN,
 } = require("./config");
 
@@ -35,7 +36,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 
 mongoose
-  .connect(`mongodb://localhost:27017/coinbase`, {useNewUrlParser: true,useUnifiedTopology: true})
+  .connect(DB, {useNewUrlParser: true,useUnifiedTopology: true})
   .then(() => {
     console.log("Successfully connected to MongoDB.");
   })
