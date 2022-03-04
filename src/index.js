@@ -29,8 +29,6 @@ app.use(morgan("dev"));
 //TO DO
 //
 //server logs to file 
-
-
 // parse requests of content-type - application/json
 app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
@@ -48,17 +46,17 @@ mongoose
 
 var timestamp = Date.now();
 
-async function loggingToDb(x,y){
-  const _log = await Log.create({date: timestamp, tokenAmount: x, walletAddress: y, resolved: 'no'})
+async function loggingToDb(z,x,y){
+  const _log = await Log.create({date: timestamp, email: z,tokenAmount: x, walletAddress: y, resolved: 'no'})
   console.log(_log)
-}
+};
 
 app.get("/create-charge", async (req, res) => {
 
   //log do bazy danych
-  loggingToDb(req.query.tokenAmount, req.query.walletAddress);
+  loggingToDb(req.query.email, req.query.tokenAmount, req.query.walletAddress);
 
-  let amountTimesPrice = req.query.tokenAmount * 0.99
+  let amountTimesPrice = req.query.tokenAmount * 0.99;
 
   const chargeData = {
     name: "Naiadcoin",
@@ -92,7 +90,7 @@ app.post("/payment-handler", (req, res) => {
 
     if (event.type === "charge:pending") {
       // received order
-      // user paid, but transaction not confirm on blockchain yet
+      // user paid, but transaction not confirmed on blockchain yet
       console.log("pending payment");
     }
 

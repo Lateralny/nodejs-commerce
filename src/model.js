@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const logSchema = new mongoose.Schema({
     date: Date,
+    email: String,
     tokenAmount: Number,
     walletAddress: String,
     resolved: String
